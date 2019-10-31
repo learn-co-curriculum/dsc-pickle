@@ -9,9 +9,9 @@ Pickle is an invaluable tool for saving objects. Think about the importance of b
 
 You will be able to:
 
-* Write Python objects to a pickle file 
-* Import Python objects from a pickle file 
-* Understand the importance of object serialization 
+* Describe the circumstances in which you would want to use a pickle
+* Write a pickle file
+* Read a pickle file
 
 ## Importing Pickle
 
