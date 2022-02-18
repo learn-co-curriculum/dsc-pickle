@@ -8,7 +8,7 @@ Pickle is an invaluable tool for saving objects.  In this lesson you will learn 
 
 You will be able to:
 
-* Describe the circumstances in which you would want to use a pickle
+* Describe the circumstances in which you would want to use a pickle file
 * Write a pickle file
 * Read a pickle file
 * Use the `joblib` library to pickle and load a scikit-learn class
@@ -17,11 +17,11 @@ You will be able to:
 
 Think about the importance of being able to save data files to CSV, or another format. For example, you start with a raw dataset which you may have downloaded from the web. Then you painstakingly take hours preprocessing the data, cleaning it, constructing features, aggregates, and other views. In order to avoid having to rerun your entire process, you are apt to save the current final cleaned version of the dataset into a serialized format like CSV.
 
-`pickle` allows you to go beyond just storing data in a format like CSV, and save any object that is currently loaded into your Python interpreter. Literally anything. You could save data stored in a dictionary, list or set as a pickle file. You can also save functions, or class instances as pickle files. Saving models is one of the important use cases of this.
+`pickle` allows you to go beyond just storing data in a format like CSV, and save any object that is currently loaded into your Python interpreter. Literally anything. You could save data stored in a `dict`, `list`, or `set` as a pickle file. You can also save functions or class instances as pickle files. Saving models is one of the important use cases of this technique.
 
 ## Pickling Base Python Objects
 
-Let's say we have this nested data structure, which would not be suitable for storage as a CSV because the values are different data types:
+Let's say we have this nested data structure example (from the [Python docs](https://docs.python.org/3/library/pickle.html#examples)), which would not be suitable for storage as a CSV because the values are different data types:
 
 
 ```python
@@ -45,8 +45,12 @@ import pickle
 
 Let's store this object as a file on disk called `data.pickle`.
 
-1. We'll need to open the file using `'wb'` because we want to write (`w`) binary (`b`) data to it.
-2. Then we can use the `dump` function from the `pickle` module to write our data object.
+1. Open a file called `'data.pickle'`.
+   1. The `.pickle` file extension is conventional for Python 3 objects. You can use a different file name or extension and it won't make a difference as far as Python is concerned, but we recommend using `.pickle` so it's clear what the file is
+2. We'll need to open the file using mode `'wb'`.
+   1. `w` because we want to write data to the file (and automatically create the file if it doesn't exist yet)
+   2. `b` because we specifically want to write binary data. `pickle` uses a binary protocol, so it won't work if you don't include the `b`
+3. Then we can use the `dump` function from the `pickle` module to write our data object.
 
 
 ```python
@@ -71,7 +75,10 @@ except NameError as e:
 
 But we can use `pickle` to load it back into memory with a new name, `data_object2`.
 
-1. We'll need to open the file using `'rb'` because we want to read (`r`) binary (`b`) data from it.
+1. Open the file `data.pickle` since that is the file name we saved prior to restarting the kernel.
+2. We'll need to open the file using mode `'rb'`.
+   1. `r` for read
+   2. `b` for binary
 2. Then we can use the `load` function from the `pickle` module to read our data object.
 
 
@@ -90,6 +97,8 @@ data_object2
      'c': {False, None, True}}
 
 
+
+***Important reminder:*** DO NOT open pickle files unless you trust the source (e.g. you created them yourself). They can contain malicious code and there are not any built-in security constraints on them.
 
 ## Pickle with scikit-learn
 
@@ -118,7 +127,7 @@ print(f"Fitted model is y = {model.coef_[0]}x + {model.intercept_}")
     Fitted model is y = 1.0x + 1.0
 
 
-We can now used the model to make predictions:
+We can now use the model to make predictions:
 
 
 ```python
@@ -134,7 +143,7 @@ model.predict([[7], [8], [9]])
 
 ### Importing `joblib`
 
-In scikit-learn, it is possible to use the `pickle` module but not recommended because it is less efficient. (See documentation [here](https://scikit-learn.org/stable/modules/model_persistence.html).) Instead, we'll use the `joblib` library.
+For scikit-learn models, it is possible to use the `pickle` module but not recommended because it is less efficient. (See documentation [here](https://scikit-learn.org/stable/modules/model_persistence.html).) Instead, we'll use the `joblib` library.
 
 (Note that we still often use the language of "pickle file" and "pickling" even if we are using a different library such as `joblib`.)
 
@@ -145,11 +154,20 @@ import joblib
 
 ### Writing Objects with `joblib`
 
-Let's save `model` using `joblib`. The functions to use (`dump` and `load`) are the same as with `pickle`:
+Let's save `model` using `joblib`.
+
+1. Once again we need to open a file to store the model in.
+   1. Instead of `'data'`, we'll call this `'regression_model'` so it's clear what the file contains
+   2. Instead of the `.pickle` file extension, we'll use `.pkl`
+      1. This is the conventional file ending for scikit-learn models, and used to be the standard for all Python objects in Python 2
+      2. Neither Python nor `joblib` nor scikit-learn will enforce this file ending. So you also might see examples with `.pickle` or `.joblib` file extensions, or some other ending, even though it was serialized using this technique
+      3. If you see a serialized model ending with `.zip`, `.pb`, or `.h5`, that means it is likely not a scikit-learn model and probably was not serialized using `joblib` or `pickle`
+2. The mode (`'wb'`) is the same as with `pickle`.
+3. The function name (`dump`) is also the same as with `pickle`.
 
 
 ```python
-with open('regression_model.pickle', 'wb') as f:
+with open('regression_model.pkl', 'wb') as f:
     joblib.dump(model, f)
 ```
 
@@ -170,10 +188,14 @@ except NameError as e:
 
 But we can load the model from the pickled file:
 
+1. Open file `'regression_model.pkl'`.
+2. Use mode `'rb'`.
+3. Use the `load` function (this time from `joblib`).
+
 
 ```python
 import joblib
-with open('regression_model.pickle', 'rb') as f:
+with open('regression_model.pkl', 'rb') as f:
     model2 = joblib.load(f)
     
 print(f"Loaded model is y = {model2.coef_[0]}x + {model2.intercept_}")
